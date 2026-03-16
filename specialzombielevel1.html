@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boxhead · Fixed Buttons + Sheets Leaderboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: #0a2f1f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .game-wrapper {
+            background: #3a2a1e;
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.7);
+            border: 4px solid #7a5c3a;
+            position: relative;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 16px;
+            box-shadow: inset 0 0 20px #1e1e1e, 0 0 0 4px #9b7e5b;
+            cursor: none;
+            width: 800px;
+            height: 600px;
+        }
+        .info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 18px;
+            color: #f0e6b2;
+            text-shadow: 3px 3px 0 #4f2f1a;
+            font-weight: 900;
+            font-size: 22px;
+            padding: 8px 25px;
+            background: #5e4a36;
+            border-radius: 50px;
+            border: 3px solid #ebc78d;
+            letter-spacing: 2px;
+        }
+        .hotbar-hint {
+            color: #ffd966;
+            font-size: 16px;
+            margin-left: 15px;
+        }
+        
+        /* ===== 🎯 CUSTOM GAME OVER MODAL (from Snake game) ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .gameover-modal {
+            background: #1c2c36;
+            border: 3px solid #4e7984;
+            border-radius: 2rem;
+            padding: 2rem;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6), inset 0 0 15px rgba(255,255,255,0.05);
+            text-align: center;
+            color: #e2f3f5;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .gameover-modal h2 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #ffb347;
+            text-shadow: 0 0 10px #ff8c00;
+            letter-spacing: 4px;
+        }
+
+        .score-big {
+            font-size: 2.5rem;
+            background: #0e191f;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            margin: 1rem 0;
+            border: 1px solid #3f626b;
+            color: #ffd966;
+            font-weight: bold;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: #0e191f;
+            border: 2px solid #3f626b;
+            border-radius: 2rem;
+            color: white;
+            font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            outline: none;
+            text-transform: uppercase;
+        }
+
+        .modal-input:focus {
+            border-color: #ffd966;
+            box-shadow: 0 0 15px #d49b3b;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-bottom: 5px solid #172e35;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: 0.08s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent; /* TRANSPARENT BACKGROUND - NO BLACK HOVER */
+        }
+
+        .restart-modal-btn {
+            background: #2e8b57;
+            border-bottom-color: #1e4a3b;
+        }
+
+        .menu-modal-btn {
+            background: #4a5568;
+            border-bottom-color: #2d3748;
+        }
+
+        .modal-btn:active {
+            border-bottom-width: 2px;
+            transform: translateY(3px);
+        }
+        
+        /* NO HOVER EFFECT - stays the same color */
+        .modal-btn:hover {
+            opacity: 0.9;
+        }
+
+        .save-confirmation {
+            background: #1e4a3b;
+            color: #d4ffb0;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            border: 1px solid #7ac47a;
+            display: inline-block;
+            animation: fadeOut 3s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-wrapper">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <div class="info">
+        <span>🧟 <span id="killCounter">0</span> ZOMBIES</span>
+        <span id="scoreDisplay">🏆 0</span>
+        <div style="display: flex; align-items: center;">
+            <span class="hotbar-hint">🖱️ SCROLL | 1-2-3</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== 🎯 CUSTOM GAME OVER MODAL (from Snake game) ===== -->
+<div id="gameoverModal" class="modal-overlay">
+    <div class="gameover-modal">
+        <h2>💀 GAME OVER</h2>
+        <div class="score-big" id="modalScoreDisplay">0</div>
+        
+        <input type="text" id="playerNameInput" class="modal-input" placeholder="ENTER YOUR NAME" maxlength="12" autocomplete="off" value="ANON">
+        
+        <div class="modal-buttons">
+            <button id="modalRestartBtn" class="modal-btn restart-modal-btn">↺ RESTART</button>
+            <button id="modalMenuBtn" class="modal-btn menu-modal-btn">🏠 MAIN MENU</button>
+        </div>
+        <p style="color: #8aaab3; margin-top: 1rem; font-size: 0.9rem;">press ENTER to save & restart</p>
+    </div>
+</div>
+
+<div id="saveMessage" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 2000; text-align: center;"></div>
+
+<script>
+    (function(){
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const killSpan = document.getElementById('killCounter');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        
+        // Modal elements
+        const modal = document.getElementById('gameoverModal');
+        const modalScore = document.getElementById('modalScoreDisplay');
+        const playerNameInput = document.getElementById('playerNameInput');
+        const modalRestartBtn = document.getElementById('modalRestartBtn');
+        const modalMenuBtn = document.getElementById('modalMenuBtn');
+        const saveMessageEl = document.getElementById('saveMessage');
+
+        // ============================================
+        // 🎮 YOUR GOOGLE SHEETS WEB APP URL
+        // ============================================
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzZv65igP7U1UxqYzHl2L2WTSvouYJiTxuhgS9uid7xVYftUZyCYp-5vBXPNB_lBvMAcg/exec';
+
+        // ============================================
+        // 🎮 PLAYER NAME FROM LOCAL STORAGE
+        // ============================================
+        let PLAYER_NAME = localStorage.getItem('boxhead_player_name') || '';
+        
+        // ============================================
+        // 📊 SAVE SCORE TO GOOGLE SHEETS (from Snake game)
+        // ============================================
+        async function saveScoreToSheet(playerName, playerScore) {
+            saveMessageEl.innerHTML = '<span class="save-confirmation">📤 Sending to leaderboard...</span>';
+            
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        name: playerName, 
+                        score: playerScore 
+                    })
+                });
+                
+                saveMessageEl.innerHTML = '<span class="save-confirmation">✅ Saved to leaderboard!</span>';
+                console.log(`✅ Score saved: ${playerName} = ${playerScore}`);
+                
+                // Save name to localStorage
+                localStorage.setItem('boxhead_player_name', playerName.toUpperCase());
+                PLAYER_NAME = playerName.toUpperCase();
+                
+            } catch (error) {
+                console.error('Save error:', error);
+                saveMessageEl.innerHTML = '<span style="background: #5e4a36; color: #ffb0b0; padding: 0.5rem 1rem; border-radius: 2rem;">⚠️ Offline - saved locally</span>';
+                
+                // Still save name even if submission fails
+                localStorage.setItem('boxhead_player_name', playerName.toUpperCase());
+                PLAYER_NAME = playerName.toUpperCase();
+            }
+            
+            setTimeout(() => {
+                saveMessageEl.innerHTML = '';
+            }, 3000);
+        }
+
+        // ============================================
+        // 🎯 MODAL CONTROLS (from Snake game)
+        // ============================================
+        function showGameOverModal(finalScore) {
+            modalScore.textContent = finalScore;
+            playerNameInput.value = PLAYER_NAME || 'ANON';
+            modal.classList.add('active');
+            setTimeout(() => playerNameInput.focus(), 200);
+        }
+
+        function hideGameOverModal() {
+            modal.classList.remove('active');
+        }
+
+        // ============================================
+        // 🎮 HANDLE NAME SUBMISSION (from Snake game)
+        // ============================================
+        function handleNameSubmit() {
+            const playerName = playerNameInput.value.trim().toUpperCase() || 'ANON';
+            
+            if (pendingScore > 0) {
+                saveScoreToSheet(playerName, pendingScore);
+            }
+            
+            hideGameOverModal();
+            resetGame();
+        }
+
+        // ============================================
+        // 🎮 HANDLE MENU (from Snake game)
+        // ============================================
+        function handleMenuClick() {
+            const playerName = playerNameInput.value.trim().toUpperCase() || 'ANON';
+            
+            if (pendingScore > 0) {
+                saveMessageEl.innerHTML = '<span class="save-confirmation">📤 Saving score before exit...</span>';
+                saveScoreToSheet(playerName, pendingScore);
+            }
+            
+            setTimeout(() => {
+                window.location.href = 'indexzombie.html';
+            }, 300);
+        }
+
+        // ============================================
+        // YOUR 64x64 PLAYER IMAGES
+        // ============================================
+        const PLAYER_IMAGE_URLS = {
+            pistol: 'https://i.imgur.com/WqbVQPD.png',
+            rifle: 'https://i.imgur.com/MTpLHj1.png',
+            shotgun: 'https://i.imgur.com/UQJUWQc.png'
+        };
+        
+        // ============================================
+        // ZOMBIE PNG IMAGE
+        // ============================================
+        const ZOMBIE_IMAGE_URL = 'https://i.imgur.com/1I8lk1J.png';
+        
+        // Load player images
+        const playerImages = {
+            pistol: new Image(),
+            rifle: new Image(),
+            shotgun: new Image()
+        };
+        playerImages.pistol.src = PLAYER_IMAGE_URLS.pistol;
+        playerImages.rifle.src = PLAYER_IMAGE_URLS.rifle;
+        playerImages.shotgun.src = PLAYER_IMAGE_URLS.shotgun;
+        
+        // Load zombie image
+        const zombieImage = new Image();
+        zombieImage.src = ZOMBIE_IMAGE_URL;
+        
+        // Track which images are loaded
+        let imagesLoaded = {
+            pistol: false,
+            rifle: false,
+            shotgun: false,
+            zombie: false
+        };
+        
+        playerImages.pistol.onload = () => imagesLoaded.pistol = true;
+        playerImages.rifle.onload = () => imagesLoaded.rifle = true;
+        playerImages.shotgun.onload = () => imagesLoaded.shotgun = true;
+        zombieImage.onload = () => imagesLoaded.zombie = true;
+
+        // ----- FIXED GRID -----
+        const GRID_OFFSET_X = 0;
+        const GRID_OFFSET_Y = 0;
+
+        // ----- GLOBAL STATE -----
+        let player = {
+            x: 400, y: 300, 
+            radius: 32,
+            speed: 3.2,
+            hp: 100,
+            maxHp: 100
+        };
+
+        // ----- SCORE & SPEED SYSTEM -----
+        let score = 0;
+        let zombieSpeedBase = 0.4;
+        const speedIncreaseThreshold = 400;
+
+        // ----- WEAPON SYSTEM -----
+        const WEAPON_TYPES = {
+            PISTOL: 'pistol',
+            RIFLE: 'rifle',
+            SHOTGUN: 'shotgun'
+        };
+        
+        const WEAPON_ORDER = [WEAPON_TYPES.PISTOL, WEAPON_TYPES.RIFLE, WEAPON_TYPES.SHOTGUN];
+        
+        let currentWeapon = WEAPON_TYPES.PISTOL;
+        let ammo = {
+            pistol: Infinity,
+            rifle: 0,
+            shotgun: 0
+        };
+
+        // ----- AUTO-FIRE SYSTEM -----
+        let isMouseDown = false;
+        let shootCooldown = 0;
+        const SHOOT_DELAY = {
+            pistol: 8,
+            rifle: 4,
+            shotgun: 20
+        };
+
+        // ----- GAME ENTITIES -----
+        let bullets = [];
+        let zombies = [];
+        let redBoxes = [];
+        let medicDrops = [];
+        
+        // ----- STATS -----
+        let kills = 0;
+        let killCounterForRedbox = 0;
+        let killCounterForMedic = 0;
+        
+        let frameId;
+        let gameActive = true;
+        let gameOver = false;
+
+        // mouse / aim
+        let mouseX = 400, mouseY = 300;
+
+        // movement flags
+        let up = false, down = false, left = false, right = false;
+
+        // spawn control
+        let spawnCounter = 0;
+        const ZOMBIE_SPAWN_DELAY = 28;
+        const MAX_ZOMBIES = 45;
+
+        // ----- SCORE SUBMISSION STATE -----
+        let pendingScore = 0;
+
+        // ============================================
+        // MOUSE SCROLL WEAPON SWITCHING
+        // ============================================
+        function switchWeapon(direction) {
+            if (!gameActive || gameOver) return;
+            
+            let currentIndex = WEAPON_ORDER.indexOf(currentWeapon);
+            
+            if (direction === 'up') {
+                currentIndex = (currentIndex - 1 + WEAPON_ORDER.length) % WEAPON_ORDER.length;
+            } else if (direction === 'down') {
+                currentIndex = (currentIndex + 1) % WEAPON_ORDER.length;
+            }
+            
+            const newWeapon = WEAPON_ORDER[currentIndex];
+            
+            if (newWeapon === WEAPON_TYPES.PISTOL) {
+                currentWeapon = newWeapon;
+            } else if (newWeapon === WEAPON_TYPES.RIFLE && ammo.rifle > 0) {
+                currentWeapon = newWeapon;
+            } else if (newWeapon === WEAPON_TYPES.SHOTGUN && ammo.shotgun > 0) {
+                currentWeapon = newWeapon;
+            } else {
+                if (direction === 'up') {
+                    switchWeapon('up');
+                } else {
+                    switchWeapon('down');
+                }
+            }
+        }
+
+        // ----- helper reset -----
+        function resetGame() {
+            gameActive = true;
+            gameOver = false;
+            kills = 0;
+            score = 0;
+            killCounterForRedbox = 0;
+            killCounterForMedic = 0;
+            killSpan.innerText = '0';
+            scoreDisplay.innerText = '🏆 0';
+            isMouseDown = false;
+            shootCooldown = 0;
+            pendingScore = 0;
+            hideGameOverModal();
+            
+            currentWeapon = WEAPON_TYPES.PISTOL;
+            ammo = {
+                pistol: Infinity,
+                rifle: 0,
+                shotgun: 0
+            };
+            
+            player = {
+                x: 400, y: 300, 
+                radius: 32,
+                speed: 3.2,
+                hp: 100,
+                maxHp: 100
+            };
+            bullets = [];
+            zombies = [];
+            redBoxes = [];
+            medicDrops = [];
+            spawnCounter = 0;
+            mouseX = 400; mouseY = 300;
+        }
+
+        // ----- ZOMBIE with dynamic speed & rotation -----
+        class Zombie {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 25;
+                this.speed = zombieSpeedBase + (Math.floor(score / speedIncreaseThreshold) * 0.1);
+                this.hp = 2;
+                this.damage = 8;
+            }
+
+            update() {
+                if (!gameActive) return;
+                const dx = player.x - this.x;
+                const dy = player.y - this.y;
+                const len = Math.hypot(dx, dy);
+                if (len > 0.001) {
+                    const move = Math.min(this.speed, len);
+                    this.x += (dx / len) * move * 0.96;
+                    this.y += (dy / len) * move * 0.96;
+                }
+                this.x += (Math.random() - 0.5) * 0.45;
+                this.y += (Math.random() - 0.5) * 0.45;
+            }
+
+            hurt(dmg) {
+                this.hp -= dmg;
+                return this.hp <= 0;
+            }
+            
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                const angle = Math.atan2(player.y - this.y, player.x - this.x);
+                ctx.rotate(angle);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#2f1a0c';
+                if (imagesLoaded.zombie) {
+                    ctx.drawImage(zombieImage, -25, -25, 50, 50);
+                } else {
+                    ctx.fillStyle = '#3f7e4a';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius-2, 0, Math.PI*2);
+                    ctx.fill();
+                }
+                ctx.restore();
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.fillStyle = '#ffe78c';
+                ctx.font = 'bold 12px "Courier New", monospace';
+                ctx.shadowBlur = 8;
+                ctx.fillText('🩸' + this.hp, -14, -35);
+                ctx.restore();
+            }
+        }
+
+        // ----- REDBOX (weapon drop) -----
+        class RedBox {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 30;
+                this.height = 30;
+                this.life = 600;
+                this.weaponType = Math.random() < 0.5 ? WEAPON_TYPES.RIFLE : WEAPON_TYPES.SHOTGUN;
+            }
+            update() { this.life--; }
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.fillStyle = '#c41e3a';
+                ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                ctx.fillStyle = '#2d2d2d';
+                ctx.fillRect(-this.width/2, -2, this.width, 4);
+                ctx.font = '20px "Courier New", monospace';
+                ctx.fillStyle = 'white';
+                ctx.shadowBlur = 4;
+                if (this.weaponType === WEAPON_TYPES.RIFLE) {
+                    ctx.fillText('🔫', -12, 8);
+                    ctx.font = '12px "Courier New"';
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillText('AK47', -8, -15);
+                } else {
+                    ctx.fillText('🔫', -12, 8);
+                    ctx.font = '12px "Courier New"';
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillText('SHOT', -10, -15);
+                }
+                ctx.font = '10px "Courier New"';
+                ctx.fillStyle = '#aaa';
+                ctx.fillText(Math.ceil(this.life/60) + 's', -8, 25);
+                ctx.restore();
+            }
+            checkPickup() {
+                const dist = Math.hypot(player.x - this.x, player.y - this.y);
+                return dist < player.radius + 20;
+            }
+        }
+
+        // ----- MEDIC DROP (heals 25 HP) -----
+        class MedicDrop {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 30;
+                this.height = 30;
+                this.life = 600;
+                this.healAmount = 25;
+            }
+            update() { this.life--; }
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.fillStyle = '#2e8b57';
+                ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(-this.width/2, -4, this.width, 8);
+                ctx.fillRect(-4, -this.height/2, 8, this.height);
+                ctx.font = '12px "Courier New", monospace';
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 4;
+                ctx.fillText('+25', -15, -20);
+                ctx.font = '10px "Courier New"';
+                ctx.fillStyle = '#aaa';
+                ctx.fillText(Math.ceil(this.life/60) + 's', -8, 25);
+                ctx.restore();
+            }
+            checkPickup() {
+                const dist = Math.hypot(player.x - this.x, player.y - this.y);
+                return dist < player.radius + 20;
+            }
+            heal() {
+                player.hp = Math.min(player.hp + this.healAmount, player.maxHp);
+            }
+        }
+
+        // ----- BULLETS -----
+        class Bullet {
+            constructor(x, y, angle, type) {
+                this.x = x;
+                this.y = y;
+                this.type = type || currentWeapon;
+                switch(this.type) {
+                    case WEAPON_TYPES.PISTOL:
+                        this.vx = Math.cos(angle) * 8.0;
+                        this.vy = Math.sin(angle) * 8.0;
+                        this.damage = 1;
+                        this.bulletSize = 5;
+                        break;
+                    case WEAPON_TYPES.RIFLE:
+                        this.vx = Math.cos(angle) * 12.0;
+                        this.vy = Math.sin(angle) * 12.0;
+                        this.damage = 1;
+                        this.bulletSize = 6;
+                        break;
+                    case WEAPON_TYPES.SHOTGUN:
+                        this.vx = Math.cos(angle) * 10.0;
+                        this.vy = Math.sin(angle) * 10.0;
+                        this.damage = 2;
+                        this.bulletSize = 7;
+                        break;
+                }
+                this.life = 70;
+                this.historyX = [x];
+                this.historyY = [y];
+                this.historyLen = 6;
+            }
+            update() {
+                this.historyX.unshift(this.x);
+                this.historyY.unshift(this.y);
+                if (this.historyX.length > this.historyLen) {
+                    this.historyX.pop();
+                    this.historyY.pop();
+                }
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+            }
+            draw(ctx) {
+                for (let i = 0; i < this.historyX.length; i++) {
+                    const alpha = 0.3 - i * 0.05;
+                    ctx.save();
+                    ctx.translate(this.historyX[i], this.historyY[i]);
+                    ctx.globalAlpha = Math.max(alpha, 0.1);
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = this.getColor();
+                    ctx.fillStyle = this.getColor();
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.bulletSize - i*0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.getColor();
+                ctx.fillStyle = this.getColor();
+                ctx.beginPath();
+                ctx.arc(0, 0, this.bulletSize, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+            getColor() {
+                switch(this.type) {
+                    case WEAPON_TYPES.PISTOL: return '#FFD966';
+                    case WEAPON_TYPES.RIFLE: return '#00FFFF';
+                    case WEAPON_TYPES.SHOTGUN: return '#FF8800';
+                    default: return '#FFD966';
+                }
+            }
+        }
+
+        // ----- SPAWN ZOMBIES -----
+        function spawnZombie() {
+            if (!gameActive || gameOver) return;
+            if (zombies.length >= MAX_ZOMBIES) return;
+            let side = Math.floor(Math.random() * 4);
+            let x, y;
+            if (side === 0) { x = Math.random() * canvas.width; y = -25; }
+            else if (side === 1) { x = canvas.width + 25; y = Math.random() * canvas.height; }
+            else if (side === 2) { x = Math.random() * canvas.width; y = canvas.height + 25; }
+            else { x = -25; y = Math.random() * canvas.height; }
+            zombies.push(new Zombie(x, y));
+        }
+
+        // ----- SPAWN REDBOX -----
+        function spawnRedBox() {
+            if (!gameActive || gameOver) return;
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 80 + Math.random() * 60;
+            const x = player.x + Math.cos(angle) * distance;
+            const y = player.y + Math.sin(angle) * distance;
+            const clampedX = Math.min(Math.max(x, 50), canvas.width - 50);
+            const clampedY = Math.min(Math.max(y, 50), canvas.height - 50);
+            redBoxes.push(new RedBox(clampedX, clampedY));
+        }
+
+        // ----- SPAWN MEDIC DROP -----
+        function spawnMedicDrop() {
+            if (!gameActive || gameOver) return;
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 80 + Math.random() * 60;
+            const x = player.x + Math.cos(angle) * distance;
+            const y = player.y + Math.sin(angle) * distance;
+            const clampedX = Math.min(Math.max(x, 50), canvas.width - 50);
+            const clampedY = Math.min(Math.max(y, 50), canvas.height - 50);
+            medicDrops.push(new MedicDrop(clampedX, clampedY));
+        }
+
+        // ----- SHOOTING -----
+        function shoot() {
+            if (!gameActive || gameOver) return;
+            if (currentWeapon !== WEAPON_TYPES.PISTOL) {
+                if (ammo[currentWeapon] <= 0) return;
+                ammo[currentWeapon]--;
+            }
+            const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+            switch(currentWeapon) {
+                case WEAPON_TYPES.PISTOL:
+                    bullets.push(new Bullet(player.x, player.y, angle, WEAPON_TYPES.PISTOL));
+                    bullets.push(new Bullet(player.x + Math.cos(angle)*5, player.y + Math.sin(angle)*5, angle + (Math.random()-0.5)*0.08, WEAPON_TYPES.PISTOL));
+                    break;
+                case WEAPON_TYPES.RIFLE:
+                    bullets.push(new Bullet(player.x, player.y, angle, WEAPON_TYPES.RIFLE));
+                    bullets.push(new Bullet(player.x + Math.cos(angle)*4, player.y + Math.sin(angle)*4, angle + (Math.random()-0.5)*0.05, WEAPON_TYPES.RIFLE));
+                    bullets.push(new Bullet(player.x + Math.cos(angle)*2, player.y + Math.sin(angle)*2, angle + (Math.random()-0.5)*0.03, WEAPON_TYPES.RIFLE));
+                    break;
+                case WEAPON_TYPES.SHOTGUN:
+                    for (let i = 0; i < 5; i++) {
+                        const spreadAngle = angle + (Math.random() - 0.5) * 0.4;
+                        bullets.push(new Bullet(player.x, player.y, spreadAngle, WEAPON_TYPES.SHOTGUN));
+                    }
+                    break;
+            }
+        }
+
+        // ============================================
+        // 🎯 WEAPON HOTBAR
+        // ============================================
+        function drawHotbar() {
+            ctx.save();
+            ctx.fillStyle = 'rgba(20, 20, 20, 0.85)';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'black';
+            const barWidth = 360;
+            const barHeight = 70;
+            const barX = canvas.width/2 - barWidth/2;
+            const barY = canvas.height - 30 - barHeight;
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth, barHeight, 12);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#ffd966';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(barX, barY, barWidth, barHeight, 12);
+            ctx.stroke();
+            
+            const slotWidth = 100;
+            const slotHeight = 50;
+            const startX = barX + 20;
+            const slotY = barY + 10;
+            
+            // Slot 1: PISTOL
+            const pistolX = startX;
+            const pistolSelected = currentWeapon === WEAPON_TYPES.PISTOL;
+            if (pistolSelected) {
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ffd700';
+                ctx.beginPath();
+                ctx.roundRect(pistolX - 5, slotY - 5, slotWidth + 10, slotHeight + 10, 8);
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = pistolSelected ? '#4a3a2a' : '#2a2a2a';
+            ctx.beginPath();
+            ctx.roundRect(pistolX, slotY, slotWidth, slotHeight, 6);
+            ctx.fill();
+            ctx.fillStyle = pistolSelected ? '#ffd966' : '#aaaaaa';
+            ctx.font = 'bold 20px "Courier New", monospace';
+            ctx.fillText('🔫', pistolX + 10, slotY + 32);
+            ctx.font = 'bold 14px "Courier New", monospace';
+            ctx.fillText('PISTOL', pistolX + 45, slotY + 32);
+            ctx.fillStyle = '#888888';
+            ctx.font = '12px "Courier New", monospace';
+            ctx.fillText('1', pistolX + 80, slotY + 18);
+            
+            // Slot 2: RIFLE
+            const rifleX = startX + slotWidth + 15;
+            const rifleSelected = currentWeapon === WEAPON_TYPES.RIFLE;
+            const hasRifle = ammo.rifle > 0;
+            if (rifleSelected) {
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00ffff';
+                ctx.beginPath();
+                ctx.roundRect(rifleX - 5, slotY - 5, slotWidth + 10, slotHeight + 10, 8);
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = rifleSelected ? '#3a4a4a' : (hasRifle ? '#2a2a2a' : '#1a1a1a');
+            ctx.beginPath();
+            ctx.roundRect(rifleX, slotY, slotWidth, slotHeight, 6);
+            ctx.fill();
+            ctx.fillStyle = rifleSelected ? '#00ffff' : (hasRifle ? '#aaaaaa' : '#555555');
+            ctx.font = 'bold 20px "Courier New", monospace';
+            ctx.fillText('🔫', rifleX + 10, slotY + 32);
+            ctx.font = 'bold 14px "Courier New", monospace';
+            ctx.fillText('AK47', rifleX + 45, slotY + 32);
+            ctx.font = 'bold 16px "Courier New", monospace';
+            ctx.fillText(hasRifle ? ammo.rifle : '0', rifleX + 70, slotY + 48);
+            ctx.fillStyle = '#888888';
+            ctx.font = '12px "Courier New", monospace';
+            ctx.fillText('2', rifleX + 80, slotY + 18);
+            
+            // Slot 3: SHOTGUN
+            const shotgunX = startX + (slotWidth + 15) * 2;
+            const shotgunSelected = currentWeapon === WEAPON_TYPES.SHOTGUN;
+            const hasShotgun = ammo.shotgun > 0;
+            if (shotgunSelected) {
+                ctx.fillStyle = 'rgba(255, 136, 0, 0.3)';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ff8800';
+                ctx.beginPath();
+                ctx.roundRect(shotgunX - 5, slotY - 5, slotWidth + 10, slotHeight + 10, 8);
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = shotgunSelected ? '#4a3a2a' : (hasShotgun ? '#2a2a2a' : '#1a1a1a');
+            ctx.beginPath();
+            ctx.roundRect(shotgunX, slotY, slotWidth, slotHeight, 6);
+            ctx.fill();
+            ctx.fillStyle = shotgunSelected ? '#ff8800' : (hasShotgun ? '#aaaaaa' : '#555555');
+            ctx.font = 'bold 20px "Courier New", monospace';
+            ctx.fillText('🔫', shotgunX + 10, slotY + 32);
+            ctx.font = 'bold 14px "Courier New", monospace';
+            ctx.fillText('SHOT', shotgunX + 45, slotY + 32);
+            ctx.font = 'bold 16px "Courier New", monospace';
+            ctx.fillText(hasShotgun ? ammo.shotgun : '0', shotgunX + 70, slotY + 48);
+            ctx.fillStyle = '#888888';
+            ctx.font = '12px "Courier New", monospace';
+            ctx.fillText('3', shotgunX + 80, slotY + 18);
+            ctx.restore();
+        }
+
+        // RoundRect utility
+        CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            this.moveTo(x + r, y);
+            this.lineTo(x + w - r, y);
+            this.quadraticCurveTo(x + w, y, x + w, y + r);
+            this.lineTo(x + w, y + h - r);
+            this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            this.lineTo(x + r, y + h);
+            this.quadraticCurveTo(x, y + h, x, y + h - r);
+            this.lineTo(x, y + r);
+            this.quadraticCurveTo(x, y, x + r, y);
+            return this;
+        };
+
+        // ----- COLLISIONS -----
+        function handleCollisions() {
+            if (!gameActive) return;
+
+            // Bullets vs zombies
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                let bulletUsed = false;
+                for (let j = zombies.length - 1; j >= 0; j--) {
+                    const z = zombies[j];
+                    const dist = Math.hypot(bullet.x - z.x, bullet.y - z.y);
+                    if (dist < 25 + 6) {
+                        if (z.hurt(bullet.damage)) {
+                            zombies.splice(j, 1);
+                            kills++;
+                            score += 10;
+                            killCounterForRedbox++;
+                            killCounterForMedic++;
+                            killSpan.innerText = kills;
+                            scoreDisplay.innerText = `🏆 ${score}`;
+                            
+                            if (killCounterForRedbox >= 20) {
+                                spawnRedBox();
+                                killCounterForRedbox = 0;
+                            }
+                            if (killCounterForMedic >= 15) {
+                                spawnMedicDrop();
+                                killCounterForMedic = 0;
+                            }
+                        }
+                        bulletUsed = true;
+                        break;
+                    }
+                }
+                if (bulletUsed || bullet.life <= 0 || bullet.x < -80 || bullet.x > canvas.width + 80 || bullet.y < -80 || bullet.y > canvas.height + 80) {
+                    bullets.splice(i, 1);
+                }
+            }
+
+            // Player vs zombie damage
+            for (let i = zombies.length - 1; i >= 0; i--) {
+                const z = zombies[i];
+                const dist = Math.hypot(player.x - z.x, player.y - z.y);
+                if (dist < player.radius + 25 - 4) {
+                    const angle = Math.atan2(player.y - z.y, player.x - z.x);
+                    player.x += Math.cos(angle) * 10;
+                    player.y += Math.sin(angle) * 10;
+                    player.hp -= z.damage;
+                    player.x = Math.min(Math.max(player.x, 32), canvas.width - 32);
+                    player.y = Math.min(Math.max(player.y, 32), canvas.height - 32);
+
+                    if (player.hp <= 0) {
+                        player.hp = 0;
+                        gameActive = false;
+                        gameOver = true;
+                        pendingScore = score;
+                        showGameOverModal(score);
+                    }
+                }
+            }
+            
+            // Redbox pickup
+            for (let i = redBoxes.length - 1; i >= 0; i--) {
+                const box = redBoxes[i];
+                box.update();
+                if (box.checkPickup()) {
+                    if (box.weaponType === WEAPON_TYPES.RIFLE) ammo.rifle += 120;
+                    else ammo.shotgun += 50;
+                    currentWeapon = box.weaponType;
+                    redBoxes.splice(i, 1);
+                } else if (box.life <= 0) redBoxes.splice(i, 1);
+            }
+            
+            // Medic drop pickup
+            for (let i = medicDrops.length - 1; i >= 0; i--) {
+                const medic = medicDrops[i];
+                medic.update();
+                if (medic.checkPickup()) {
+                    medic.heal();
+                    medicDrops.splice(i, 1);
+                } else if (medic.life <= 0) medicDrops.splice(i, 1);
+            }
+            
+            player.x = Math.min(Math.max(player.x, 32), canvas.width - 32);
+            player.y = Math.min(Math.max(player.y, 32), canvas.height - 32);
+        }
+
+        // ----- DRAWING -----
+        function drawFloor() {
+            ctx.fillStyle = '#46423e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#6a5e4e';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i + GRID_OFFSET_X, 0);
+                ctx.lineTo(i + GRID_OFFSET_X, canvas.height);
+                ctx.strokeStyle = '#625548';
+                ctx.stroke();
+            }
+            for (let i = 0; i <= canvas.height; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, i + GRID_OFFSET_Y);
+                ctx.lineTo(canvas.width, i + GRID_OFFSET_Y);
+                ctx.strokeStyle = '#625548';
+                ctx.stroke();
+            }
+            ctx.fillStyle = '#3a1c1c';
+            ctx.globalAlpha = 0.15;
+            for (let i = 0; i < 15; i++) {
+                ctx.beginPath();
+                ctx.arc(120 + i * 37, 80 + (i % 4) * 50, 12, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+            if (imagesLoaded[currentWeapon]) {
+                ctx.rotate(angle);
+                ctx.drawImage(playerImages[currentWeapon], -32, -32, 64, 64);
+            } else {
+                ctx.fillStyle = '#3c8d2f';
+                ctx.beginPath();
+                ctx.arc(0, 0, player.radius, 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.restore();
+            
+            ctx.fillStyle = '#27221c';
+            ctx.fillRect(player.x-32, player.y-50, 64, 10);
+            const healthPercent = player.hp / player.maxHp;
+            ctx.fillStyle = healthPercent > 0.5 ? '#50c878' : '#f4c542';
+            ctx.fillRect(player.x-32, player.y-50, 64 * healthPercent, 10);
+            ctx.strokeStyle = '#efefef';
+            ctx.lineWidth = 1.2;
+            ctx.strokeRect(player.x-32, player.y-50, 64, 10);
+            
+            if (PLAYER_NAME) {
+                ctx.font = 'bold 14px "Courier New", monospace';
+                ctx.fillStyle = '#ffd966';
+                ctx.shadowBlur = 6;
+                ctx.fillText(`${PLAYER_NAME}`, player.x - 35, player.y - 65);
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function drawZombies() {
+            zombies.forEach(z => z.draw(ctx));
+        }
+
+        function drawUI() {
+            // Aim crosshair
+            ctx.save();
+            ctx.translate(mouseX, mouseY);
+            ctx.strokeStyle = '#f2ee9e';
+            ctx.lineWidth = 2.6;
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = '#000';
+            ctx.beginPath();
+            ctx.moveTo(-14, 0); ctx.lineTo(-6, 0);
+            ctx.moveTo(6, 0); ctx.lineTo(14, 0);
+            ctx.moveTo(0, -14); ctx.lineTo(0, -6);
+            ctx.moveTo(0, 6); ctx.lineTo(0, 14);
+            ctx.stroke();
+            ctx.restore();
+
+            ctx.font = '16px "Courier New", monospace';
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 6;
+            ctx.fillText(`❤️ ${player.hp}/${player.maxHp}`, 20, 50);
+
+            const speedLevel = Math.floor(score / speedIncreaseThreshold);
+            const currentSpeed = (zombieSpeedBase + (speedLevel * 0.1)).toFixed(1);
+            ctx.font = '16px "Courier New", monospace';
+            ctx.fillStyle = '#ffaa66';
+            ctx.fillText(`⚡ ZOMBIE SPEED: ${currentSpeed}`, 20, 90);
+
+            ctx.font = '16px "Courier New", monospace';
+            ctx.fillStyle = '#ffeeaa';
+            ctx.shadowBlur = 6;
+            ctx.fillText(`📦 WEAPON: ${20 - killCounterForRedbox} KILLS`, 20, 130);
+            ctx.fillText(`💊 MEDIC: ${15 - killCounterForMedic} KILLS`, 20, 160);
+            
+            drawHotbar();
+        }
+
+        // ----- GAME LOOP -----
+        function gameLoop() {
+            if (!gameActive && gameOver) {
+                drawFloor();
+                drawZombies();
+                drawPlayer();
+                redBoxes.forEach(box => box.draw(ctx));
+                medicDrops.forEach(medic => medic.draw(ctx));
+                drawUI();
+                frameId = requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            if (!gameOver && gameActive) {
+                spawnCounter++;
+                if (spawnCounter >= ZOMBIE_SPAWN_DELAY) {
+                    spawnZombie();
+                    spawnCounter = 0;
+                    if (zombies.length < 15) spawnZombie();
+                }
+            }
+
+            if (gameActive) {
+                let dx = 0, dy = 0;
+                if (up) dy -= 1;
+                if (down) dy += 1;
+                if (left) dx -= 1;
+                if (right) dx += 1;
+                if (dx !== 0 || dy !== 0) {
+                    const norm = Math.hypot(dx, dy);
+                    dx = (dx / norm) * player.speed;
+                    dy = (dy / norm) * player.speed;
+                    player.x += dx;
+                    player.y += dy;
+                }
+
+                if (isMouseDown && gameActive && !gameOver) {
+                    if (shootCooldown <= 0) {
+                        shoot();
+                        shootCooldown = SHOOT_DELAY[currentWeapon] || 8;
+                    } else {
+                        shootCooldown--;
+                    }
+                } else {
+                    shootCooldown = 0;
+                }
+
+                zombies.forEach(z => z.update());
+                bullets.forEach(b => b.update());
+                handleCollisions();
+            }
+
+            drawFloor();
+            drawZombies();
+            bullets.forEach(b => b.draw(ctx));
+            redBoxes.forEach(box => box.draw(ctx));
+            medicDrops.forEach(medic => medic.draw(ctx));
+            drawPlayer();
+            drawUI();
+
+            frameId = requestAnimationFrame(gameLoop);
+        }
+
+        // ----- EVENT LISTENERS -----
+        function onMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const canvasRelativeX = (e.clientX - rect.left) * scaleX;
+            const canvasRelativeY = (e.clientY - rect.top) * scaleY;
+            mouseX = Math.min(Math.max(canvasRelativeX, 0), canvas.width);
+            mouseY = Math.min(Math.max(canvasRelativeY, 0), canvas.height);
+        }
+
+        function onMouseDown(e) {
+            e.preventDefault();
+            
+            if (gameActive && !gameOver && !modal.classList.contains('active')) {
+                isMouseDown = true;
+                shoot();
+            }
+        }
+
+        function onMouseUp(e) {
+            e.preventDefault();
+            isMouseDown = false;
+            shootCooldown = 0;
+        }
+
+        function onWheel(e) {
+            e.preventDefault();
+            if (!gameActive || gameOver || modal.classList.contains('active')) return;
+            if (e.deltaY < 0) switchWeapon('up');
+            else switchWeapon('down');
+        }
+
+       // ============================================
+// 🎮 FIXED KEYDOWN - NOW TYPING WORKS!
+// ============================================
+function onKeyDown(e) {
+    // ✅ IMPORTANT: Check if modal is active FIRST
+    if (modal.classList.contains('active')) {
+        // Allow normal typing in input field - don't prevent anything!
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleNameSubmit();
+        }
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            hideGameOverModal();
+            resetGame();
+        }
+        return; // Don't process game controls
+    }
+    
+    // Game controls - only when game is active and modal is closed
+    if (gameActive && !gameOver) {
+        if (e.key === 'w' || e.key === 'W') up = true;
+        if (e.key === 's' || e.key === 'S') down = true;
+        if (e.key === 'a' || e.key === 'A') left = true;
+        if (e.key === 'd' || e.key === 'D') right = true;
+        
+        if (e.key === '1') currentWeapon = WEAPON_TYPES.PISTOL;
+        if (e.key === '2' && ammo.rifle > 0) currentWeapon = WEAPON_TYPES.RIFLE;
+        if (e.key === '3' && ammo.shotgun > 0) currentWeapon = WEAPON_TYPES.SHOTGUN;
+        
+        // Only prevent these specific keys
+        if (['w','a','s','d','W','A','S','D','1','2','3'].includes(e.key)) {
+            e.preventDefault();
+        }
+    }
+}
+
+// ============================================
+// 🎮 FIXED KEYUP
+// ============================================
+function onKeyUp(e) {
+    // Don't process game controls when modal is active
+    if (modal.classList.contains('active')) return;
+    
+    if (e.key === 'w' || e.key === 'W') up = false;
+    if (e.key === 's' || e.key === 'S') down = false;
+    if (e.key === 'a' || e.key === 'A') left = false;
+    if (e.key === 'd' || e.key === 'D') right = false;
+    
+    if (['w','a','s','d','W','A','S','D'].includes(e.key)) e.preventDefault();
+}
+
+        // ============================================
+        // 🎮 MODAL EVENT LISTENERS (from Snake game)
+        // ============================================
+        modalRestartBtn.addEventListener('click', handleNameSubmit);
+        modalMenuBtn.addEventListener('click', handleMenuClick);
+
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        canvas.addEventListener('wheel', onWheel, { passive: false });
+        canvas.addEventListener('mousedown', onMouseDown);
+        canvas.addEventListener('mouseup', onMouseUp);
+        canvas.addEventListener('mouseleave', onMouseUp);
+        
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('keyup', onKeyUp);
+        canvas.addEventListener('mousemove', onMouseMove);
+
+        resetGame();
+        gameLoop();
+
+        window.addEventListener('beforeunload', function() {
+            if (frameId) cancelAnimationFrame(frameId);
+        });
+    })();
+</script>
+
+</body>
+</html>

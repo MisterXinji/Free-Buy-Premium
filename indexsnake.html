@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐍 SNAKE GAME · ARCADE MENU</title>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(145deg, #1e2f3b 0%, #15242b 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: 'Courier New', Courier, monospace;
+        padding: 1rem;
+    }
+
+    .menu-container {
+        max-width: 1100px;
+        width: 100%;
+        margin: 0 auto;
+        background: #1c2c36;
+        padding: 2rem 1.5rem;
+        border-radius: 2rem;
+        box-shadow: 0 25px 35px -8px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.06);
+        border: 2px solid #3f626b;
+    }
+
+    .game-title {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .game-title h1 {
+        font-size: clamp(2rem, 8vw, 4rem);
+        color: #b0e57c;
+        text-shadow: 0 0 20px #6f9e4c, 0 5px 0 #0f1e22;
+        letter-spacing: 4px;
+        word-break: break-word;
+        line-height: 1.2;
+    }
+
+    .game-title p {
+        color: #bed7da;
+        font-size: clamp(0.8rem, 4vw, 1.2rem);
+        margin-top: 0.5rem;
+        border-top: 2px dashed #4e7984;
+        border-bottom: 2px dashed #4e7984;
+        padding: 0.5rem;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .tutorial-card, .leaderboard-card {
+        background: #0e191f;
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        border: 2px solid #3f626b;
+        box-shadow: inset 0 0 15px #030708;
+        width: 100%;
+    }
+
+    .leaderboard-card {
+        border-color: #4e7984;
+        box-shadow: inset 0 0 15px #030708, 0 0 20px rgba(78, 121, 132, 0.3);
+    }
+
+    .tutorial-card h2, .leaderboard-card h2 {
+        font-size: clamp(1.5rem, 6vw, 2rem);
+        border-bottom: 3px solid;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.2rem;
+        text-shadow: 0 0 10px;
+    }
+
+    .tutorial-card h2 {
+        color: #ffb347;
+        border-bottom-color: #ffb347;
+        text-shadow: 0 0 10px #ff8c00;
+    }
+
+    .leaderboard-card h2 {
+        color: #ffd700;
+        border-bottom-color: #ffd700;
+        text-shadow: 0 0 10px #ffb347;
+    }
+
+    .tutorial-step {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        color: #e2f3f5;
+        font-size: clamp(1rem, 4vw, 1.2rem);
+    }
+
+    .tutorial-step span {
+        background: #263f48;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: bold;
+        color: #b0e57c;
+        border-bottom: 3px solid #0e1c21;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .apple-icon {
+        color: #ff3b4a;
+        font-size: 1.5rem;
+        margin: 0 0.2rem;
+    }
+
+    .keyboard-grid {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1rem 0;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .key {
+        background: #263f48;
+        border-bottom: 5px solid #0e1c21;
+        color: white;
+        font-size: clamp(1.2rem, 5vw, 1.5rem);
+        font-weight: bold;
+        width: clamp(50px, 15vw, 70px);
+        height: clamp(50px, 15vw, 70px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 1rem;
+        box-shadow: 0 5px 0 #0b1519;
+    }
+
+    .leaderboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #e2f3f5;
+        font-size: clamp(0.9rem, 4vw, 1.1rem);
+    }
+
+    .leaderboard-table th {
+        text-align: left;
+        padding: 0.6rem 0.3rem;
+        color: #bed7da;
+        border-bottom: 2px solid #3f626b;
+    }
+
+    .leaderboard-table td {
+        padding: 0.5rem 0.3rem;
+        border-bottom: 1px solid #2d4a53;
+        word-break: break-word;
+    }
+
+    .leaderboard-table th:first-child,
+    .leaderboard-table td:first-child {
+        width: 15%;
+    }
+
+    .leaderboard-table th:nth-child(2),
+    .leaderboard-table td:nth-child(2) {
+        width: 50%;
+    }
+
+    .leaderboard-table th:last-child,
+    .leaderboard-table td:last-child {
+        width: 35%;
+    }
+
+    .loading-leaderboard {
+        color: #8aaab3;
+        text-align: center;
+        padding: 2rem 1rem;
+        font-size: clamp(1rem, 4vw, 1.2rem);
+    }
+
+    .start-section {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+
+    .start-btn {
+        background: #2e8b57;
+        border: none;
+        border-bottom: 6px solid #1e4a3b;
+        color: white;
+        font-size: clamp(1.5rem, 6vw, 2.2rem);
+        font-weight: bold;
+        padding: 1rem 2rem;
+        border-radius: 3rem;
+        cursor: pointer;
+        font-family: 'Courier New', monospace;
+        transition: 0.08s ease;
+        box-shadow: 0 8px 0 #0f1e22, 0 10px 20px black;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        display: inline-block;
+        text-decoration: none;
+        margin: 0.5rem 0;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .start-btn:active {
+        border-bottom-width: 3px;
+        transform: translateY(4px);
+        box-shadow: 0 4px 0 #0f1e22, 0 10px 20px black;
+    }
+
+    .start-btn a {
+        color: white;
+        text-decoration: none;
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(10, 18, 20, 0.95);
+        backdrop-filter: blur(8px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        padding: 1rem;
+    }
+
+    .loading-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .loading-content {
+        text-align: center;
+        color: #b0e57c;
+        font-size: clamp(1.5rem, 6vw, 2rem);
+    }
+
+    .snake-loader {
+        width: clamp(60px, 15vw, 80px);
+        height: clamp(60px, 15vw, 80px);
+        border: 6px solid #1e3a41;
+        border-top: 6px solid #b0e57c;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 1.5rem auto;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .footer-note {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #6e949b;
+        font-size: 0.8rem;
+        border-top: 1px solid #2d4a53;
+        padding-top: 1.2rem;
+    }
+
+    /* Tablet Styles */
+    @media (min-width: 768px) {
+        .menu-container {
+            padding: 2rem;
+        }
+        
+        .main-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .start-btn {
+            width: auto;
+            padding: 1.2rem 3rem;
+        }
+    }
+
+    /* Small Phone Styles */
+    @media (max-width: 480px) {
+        body {
+            padding: 0.8rem;
+        }
+        
+        .menu-container {
+            padding: 1.2rem;
+            border-radius: 1.5rem;
+        }
+        
+        .tutorial-step {
+            gap: 0.8rem;
+        }
+        
+        .tutorial-step span {
+            width: 30px;
+            height: 30px;
+            font-size: 1rem;
+        }
+        
+        .key {
+            width: 45px;
+            height: 45px;
+            font-size: 1.2rem;
+        }
+        
+        .leaderboard-table {
+            font-size: 0.9rem;
+        }
+        
+        .footer-note {
+            font-size: 0.7rem;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="menu-container">
+        <div class="game-title">
+            <h1>🐍 SNAKE GAME</h1>
+            <p>CLASSIC ARCADE · EAT · GROW · SURVIVE</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="tutorial-card">
+                <h2>📖 TUTORIAL</h2>
+                
+                <div class="tutorial-step">
+                    <span>1</span> Use arrow keys to move
+                </div>
+                <div class="keyboard-grid">
+                    <div class="key">▲</div>
+                    <div class="key">▼</div>
+                    <div class="key">◀</div>
+                    <div class="key">▶</div>
+                </div>
+                
+                <div class="tutorial-step" style="margin-top: 2rem;">
+                    <span>2</span> Eat <span class="apple-icon">🍎</span> to grow & gain +10
+                </div>
+                
+                <div class="tutorial-step">
+                    <span>3</span> Don't hit walls or yourself
+                </div>
+                
+                <div class="tutorial-step">
+                    <span>4</span> Enter name to save high score
+                </div>
+                
+                <div style="background: #1c2c36; border-radius: 1.5rem; padding: 1rem; margin-top: 1.5rem; border: 1px solid #4e7984;">
+                    <p style="color: #bed7da; font-size: 1.1rem;">🏆 <strong>PRO TIP:</strong> Every score saves to the global leaderboard!</p>
+                </div>
+            </div>
+
+            <div class="leaderboard-card">
+                <h2>🏆 TOP 5 PLAYERS</h2>
+                <div id="leaderboard-container" style="min-height: 300px;">
+                    <div class="loading-leaderboard">📡 Loading champions...</div>
+                </div>
+                <p style="color: #8aaab3; font-size: 0.9rem; margin-top: 1rem; text-align: right;">🔄 updates every 5s</p>
+            </div>
+        </div>
+
+        <div class="start-section">
+            <button class="start-btn" id="startGameBtn">
+                <a href="levelselection.html" id="gameLink">▶ START GAME</a>
+            </button>
+            <p style="color: #bed7da; margin-top: 0.8rem;">⬆️ click to begin · press Enter</p>
+        </div>
+
+        <div class="footer-note">
+            🍎 Connect your name to immortality · v1.0
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="snake-loader"></div>
+            <h2>LOADING GAME...</h2>
+            <p style="color: #8aaab3; font-size: 1.2rem;">preparing the grid</p>
+        </div>
+    </div>
+
+<script>
+    // ============================================
+    // 🏆 TOP 5 LEADERBOARD - 100% WORKING
+    // ============================================
+    
+    // PASTE YOUR NEW WEB APP URL HERE
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwmmbokNi1duI22Ds4f3LX2iwpqX-Ig4pDZKFl0F9z-3bVdehk83DWlHekUHJDqy4_4sA/exec";
+
+    async function loadTop5() {
+        const container = document.getElementById('leaderboard-container');
+        
+        try {
+            // Fetch top 5 directly from your Google Sheet via Apps Script
+            const response = await fetch(WEB_APP_URL + '?cb=' + Date.now());
+            const top5 = await response.json();
+            
+            if (top5.error) {
+                throw new Error(top5.error);
+            }
+
+            if (top5.length === 0) {
+                container.innerHTML = '<div style="color: #ffb347; text-align: center; padding: 2rem;">✨ No scores yet. Be the first!</div>';
+                return;
+            }
+
+            // Build table
+            let html = `
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>PLAYER</th>
+                            <th>🍎 SCORE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            top5.forEach((player, index) => {
+                let medal = '';
+                let style = '';
+                
+                if (index === 0) { medal = '🥇'; style = 'color: #ffd700; font-size: 1.3rem;'; }
+                else if (index === 1) { medal = '🥈'; style = 'color: #c0c0c0; font-size: 1.2rem;'; }
+                else if (index === 2) { medal = '🥉'; style = 'color: #cd7f32; font-size: 1.1rem;'; }
+                else { medal = `${index + 1}`; }
+                
+                html += `
+                    <tr>
+                        <td style="font-weight: bold; ${style}">${medal}</td>
+                        <td>${player.name.substring(0, 12)}</td>
+                        <td style="font-weight: bold; color: #b0e57c;">${player.score}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            
+        } catch (error) {
+            console.error('Error:', error);
+            // Keep showing last good data - do nothing
+        }
+    }
+
+    // ============================================
+    // 🚀 UPDATE EVERY 3 SECONDS
+    // ============================================
+    
+    // Load immediately
+    loadTop5();
+    
+    // Check for new scores every 3 seconds
+    setInterval(loadTop5, 3000);
+</script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOXHEAD · MAIN MENU</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        body {
+            background: #0a2f1f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            padding: 20px;
+        }
+        
+        .menu-container {
+            background: #3a2a1e;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.7);
+            border: 6px solid #7a5c3a;
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        .game-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .game-title h1 {
+            color: #ffd966;
+            font-size: 48px;
+            text-shadow: 6px 6px 0 #4f2f1a;
+            letter-spacing: 8px;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .left-panel {
+            flex: 1;
+            min-width: 280px;
+            background: #5e4a36;
+            border-radius: 20px;
+            padding: 25px;
+            border: 4px solid #ebc78d;
+            color: #f0e6b2;
+        }
+        
+        .right-panel {
+            flex: 1;
+            min-width: 280px;
+            background: #1e3a2a;
+            border-radius: 20px;
+            padding: 25px;
+            border: 4px solid #ebc78d;
+            color: #f0e6b2;
+        }
+        
+        .leaderboard-header {
+            border-bottom: 3px solid #ebc78d;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .leaderboard-header h3 {
+            color: #ffd966;
+            font-size: 20px;
+        }
+        
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #f0e6b2;
+            font-size: 14px;
+        }
+        
+        .leaderboard-table th {
+            text-align: left;
+            padding: 8px 5px;
+            color: #ebc78d;
+            border-bottom: 2px solid #9b7e5b;
+        }
+        
+        .leaderboard-table td {
+            padding: 8px 5px;
+            border-bottom: 1px solid #5e7a5e;
+        }
+        
+        .play-btn {
+            width: 100%;
+            padding: 18px;
+            background: #d49b3b;
+            border: 0;
+            font-size: 24px;
+            border-radius: 16px;
+            color: #202020;
+            border-bottom: 8px solid #6d4c2c;
+            cursor: pointer;
+            font-family: 'Press Start 2P', monospace;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .play-btn:hover {
+            background: #f3c26b;
+            transform: translateY(4px);
+            border-bottom-width: 4px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: #aaa;
+        }
+        
+        .empty-state {
+            color: #aaa;
+            text-align: center;
+            padding: 30px;
+            border: 2px dashed #5e7a5a;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <div class="game-title">
+            <h1>Zombie Slayer</h1>
+        </div>
+        
+        <div class="main-content">
+            <!-- LEFT PANEL -->
+            <div class="left-panel">
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #ffd966; margin-bottom: 20px;">🧟 CONTROLS</h3>
+                    <div style="margin-bottom: 15px;"><span style="background: #2d2d2d; padding: 8px 12px; border-radius: 10px;">WASD</span> MOVE</div>
+                    <div style="margin-bottom: 15px;"><span style="background: #2d2d2d; padding: 8px 12px; border-radius: 10px;">MOUSE</span> AIM + SHOOT</div>
+                    <div style="margin-bottom: 15px;"><span style="background: #2d2d2d; padding: 8px 12px; border-radius: 10px;">SCROLL</span> SWITCH</div>
+                    <div style="margin-bottom: 15px;"><span style="background: #2d2d2d; padding: 8px 12px; border-radius: 10px;">1-2-3</span> QUICK SELECT</div>
+                </div>
+                
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #ffd966; margin-bottom: 20px;">🔫 WEAPONS</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">PISTOL <span style="color: #aaa;">∞</span></div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">AK47 <span style="color: #aaa;">+120</span></div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">SHOTGUN <span style="color: #aaa;">+50</span></div>
+                </div>
+                
+                <a href="specialzombielevel1.html" id="startGameBtn" class="play-btn">▶ PLAY</a>
+                <p style="font-size: 10px; margin-top: 15px; color: #ebc78d; text-align: center;">
+                    YOU WILL ENTER NAME WHEN YOU DIE
+                </p>
+            </div>
+            
+            <!-- RIGHT PANEL - LEADERBOARD -->
+            <div class="right-panel">
+                <div class="leaderboard-header">
+                    <h3>🏆 TOP 10 SURVIVORS</h3>
+                </div>
+                
+                <div id="leaderboard-container">
+                    <div class="loading" id="loading">📡 LOADING...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 🏆 SIMPLE JSONP LEADERBOARD - 100% WORKS
+        // ============================================
+        
+        // 🔴🔴🔴 PASTE YOUR NEW URL HERE 🔴🔴🔴
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzZv65igP7U1UxqYzHl2L2WTSvouYJiTxuhgS9uid7xVYftUZyCYp-5vBXPNB_lBvMAcg/exec';
+        
+        const container = document.getElementById('leaderboard-container');
+        
+        function loadLeaderboard() {
+            container.innerHTML = '<div class="loading">📡 LOADING...</div>';
+            
+            // Try fetch first, fallback to JSONP
+            fetch(WEB_APP_URL + '?t=' + Date.now())
+                .then(response => response.json())
+                .then(data => {
+                    console.log('✅ Fetch success:', data);
+                    displayScores(data);
+                })
+                .catch(error => {
+                    console.log('❌ Fetch failed, trying JSONP:', error);
+                    loadLeaderboardJSONP();
+                });
+        }
+        
+        function loadLeaderboardJSONP() {
+            const callbackName = 'callback_' + Date.now();
+            
+            window[callbackName] = function(data) {
+                console.log('📊 JSONP success:', data);
+                displayScores(data);
+                delete window[callbackName];
+                document.body.removeChild(script);
+            };
+            
+            const script = document.createElement('script');
+            script.src = WEB_APP_URL + '?callback=' + callbackName + '&t=' + Date.now();
+            document.body.appendChild(script);
+            
+            setTimeout(() => {
+                if (window[callbackName]) {
+                    container.innerHTML = '<div class="empty-state">⚠️ CONNECTION ERROR</div>';
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                }
+            }, 5000);
+        }
+        
+        function displayScores(scores) {
+            if (!scores || scores.length === 0) {
+                container.innerHTML = '<div class="empty-state">✨ NO SCORES YET<br>BE THE FIRST!</div>';
+                return;
+            }
+            
+            // Take top 10
+            const top10 = scores.slice(0, 10);
+            
+            let html = '<table class="leaderboard-table">';
+            html += '<tr><th>#</th><th>PLAYER</th><th>SCORE</th></tr>';
+            
+            top10.forEach((player, index) => {
+                const rank = index + 1;
+                const name = (player.name || 'ANON').substring(0, 12);
+                const score = Number(player.score || 0).toLocaleString();
+                
+                let rankDisplay = rank;
+                let rankStyle = '';
+                
+                if (rank === 1) { rankDisplay = '🥇'; rankStyle = 'color: #ffd700; font-size: 1.2rem;'; }
+                else if (rank === 2) { rankDisplay = '🥈'; rankStyle = 'color: #c0c0c0; font-size: 1.2rem;'; }
+                else if (rank === 3) { rankDisplay = '🥉'; rankStyle = 'color: #cd7f32; font-size: 1.2rem;'; }
+                
+                html += `<tr>
+                    <td style="${rankStyle} font-weight: bold;">${rankDisplay}</td>
+                    <td style="font-weight: ${rank <= 3 ? 'bold' : 'normal'};">${name}</td>
+                    <td style="color: #ffd966; font-weight: bold;">${score}</td>
+                </tr>`;
+            });
+            
+            // Add empty rows if less than 10
+            if (top10.length < 10) {
+                for (let i = top10.length; i < 10; i++) {
+                    html += `<tr>
+                        <td style="color: #5e7a5e;">${i + 1}</td>
+                        <td style="color: #5e7a5e;">---</td>
+                        <td style="color: #5e7a5e;">0</td>
+                    </tr>`;
+                }
+            }
+            
+            html += '</table>';
+            container.innerHTML = html;
+        }
+        
+        // Load immediately and every 10 seconds
+        loadLeaderboard();
+        setInterval(loadLeaderboard, 10000);
+        
+        // Save default name
+        document.getElementById('startGameBtn').addEventListener('click', function() {
+            if (!localStorage.getItem('boxhead_player_name')) {
+                localStorage.setItem('boxhead_player_name', 'ANON');
+            }
+        });
+    </script>
+</body>
+</html>

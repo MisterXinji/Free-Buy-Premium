@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐍 SNAKE GAME · LEVEL SELECT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1e2f3b 0%, #15242b 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 1rem;
+        }
+
+        .menu-container {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            background: #1c2c36;
+            padding: 2rem 1.5rem;
+            border-radius: 2rem;
+            box-shadow: 0 25px 35px -8px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.06);
+            border: 2px solid #3f626b;
+        }
+
+        .game-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .game-title h1 {
+            font-size: clamp(2rem, 8vw, 4rem);
+            color: #b0e57c;
+            text-shadow: 0 0 20px #6f9e4c, 0 5px 0 #0f1e22;
+            letter-spacing: 4px;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+
+        .game-title p {
+            color: #bed7da;
+            font-size: clamp(0.8rem, 4vw, 1.2rem);
+            margin-top: 0.5rem;
+            border-top: 2px dashed #4e7984;
+            border-bottom: 2px dashed #4e7984;
+            padding: 0.5rem;
+            display: inline-block;
+            width: 100%;
+        }
+
+        /* ===== 🎮 LEVEL SELECTION CARDS ===== */
+        .level-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .level-card {
+            background: #0e191f;
+            border-radius: 2rem;
+            padding: 1.8rem;
+            border: 2px solid #3f626b;
+            box-shadow: inset 0 0 15px #030708;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            text-decoration: none;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+            border-color: #b0e57c;
+            box-shadow: 0 0 30px rgba(176, 229, 124, 0.2);
+        }
+
+        .level-card:active {
+            transform: translateY(0px);
+        }
+
+        .level-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .level-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #b0e57c;
+            text-shadow: 0 0 10px #6f9e4c;
+        }
+
+        .level-badge {
+            background: #263f48;
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+            color: #e2f3f5;
+            font-size: 0.9rem;
+            border-bottom: 2px solid #4e7984;
+        }
+
+        .level-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #e2f3f5;
+            margin-bottom: 0.5rem;
+        }
+
+        .level-desc {
+            color: #8aaab3;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        .level-stats {
+            display: flex;
+            gap: 1rem;
+            color: #bed7da;
+            font-size: 0.9rem;
+        }
+
+        .level-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* Level 1 specific style */
+        .level-card[data-level="1"] .level-number {
+            color: #6f9e4c;
+        }
+
+        .level-card[data-level="1"]:hover {
+            border-color: #6f9e4c;
+        }
+
+        /* Level 2 specific style */
+        .level-card[data-level="2"] {
+            background: linear-gradient(145deg, #0e191f, #1a2a32);
+        }
+
+        .level-card[data-level="2"] .level-number {
+            color: #ffb347;
+            text-shadow: 0 0 10px #ff8c00;
+        }
+
+        .level-card[data-level="2"]:hover {
+            border-color: #ffb347;
+            box-shadow: 0 0 30px rgba(255, 179, 71, 0.2);
+        }
+
+        /* Level 3 specific style */
+        .level-card[data-level="3"] {
+            background: linear-gradient(145deg, #0e191f, #1a1a2a);
+        }
+
+        .level-card[data-level="3"] .level-number {
+            color: #9b59b6;
+            text-shadow: 0 0 10px #9b59b6;
+        }
+
+        .level-card[data-level="3"]:hover {
+            border-color: #9b59b6;
+            box-shadow: 0 0 30px rgba(155, 89, 182, 0.3);
+        }
+
+        .level-card[data-level="3"] .level-badge {
+            background: #4a2a4a;
+            border-bottom-color: #9b59b6;
+        }
+
+        .speed-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: #1e3a41;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+        }
+
+        .speed-dot {
+            width: 8px;
+            height: 8px;
+            background: #b0e57c;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .speed-dot:nth-child(2) { animation-delay: 0.3s; }
+        .speed-dot:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* ===== LEADERBOARD SECTION ===== */
+        .leaderboard-card {
+            background: #0e191f;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            border: 2px solid #4e7984;
+            box-shadow: inset 0 0 15px #030708, 0 0 20px rgba(78, 121, 132, 0.3);
+            margin-top: 1rem;
+        }
+
+        .leaderboard-card h2 {
+            color: #ffd700;
+            font-size: clamp(1.5rem, 6vw, 2rem);
+            border-bottom: 3px solid #ffd700;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.2rem;
+            text-shadow: 0 0 10px #ffb347;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #e2f3f5;
+            font-size: clamp(0.9rem, 4vw, 1.1rem);
+        }
+
+        .leaderboard-table th {
+            text-align: left;
+            padding: 0.6rem 0.3rem;
+            color: #bed7da;
+            border-bottom: 2px solid #3f626b;
+        }
+
+        .leaderboard-table td {
+            padding: 0.5rem 0.3rem;
+            border-bottom: 1px solid #2d4a53;
+            word-break: break-word;
+        }
+
+        .leaderboard-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .loading-leaderboard {
+            color: #8aaab3;
+            text-align: center;
+            padding: 2rem 1rem;
+            font-size: clamp(1rem, 4vw, 1.2rem);
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #6e949b;
+            font-size: 0.8rem;
+            border-top: 1px solid #2d4a53;
+            padding-top: 1.2rem;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            .level-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .level-card {
+                padding: 1.5rem;
+            }
+            
+            .level-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.8rem;
+            }
+            
+            .menu-container {
+                padding: 1.2rem;
+                border-radius: 1.5rem;
+            }
+            
+            .level-number {
+                font-size: 1.5rem;
+            }
+            
+            .level-title {
+                font-size: 1.3rem;
+            }
+            
+            .level-desc {
+                font-size: 0.9rem;
+            }
+            
+            .level-stats {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <div class="game-title">
+            <h1>🐍 SNAKE GAME</h1>
+            <p>CLASSIC ARCADE · EAT · GROW · SURVIVE</p>
+        </div>
+
+        <!-- ===== 🎮 LEVEL SELECTION ===== -->
+        <div class="level-grid">
+            <!-- LEVEL 1: CLASSIC MODE -->
+            <a href="snakegamelevel1.html" class="level-card" data-level="1">
+                <div class="level-header">
+                    <span class="level-number">LEVEL 1</span>
+                    <span class="level-badge">CLASSIC</span>
+                </div>
+                <div class="level-title">🐍 CLASSIC MODE</div>
+                <div class="level-desc">
+                    The original Snake experience. Constant speed, perfect for beginners and high score hunters.
+                </div>
+                <div class="level-stats">
+                    <span>⚡ SPEED: CONSTANT</span>
+                    <span>🎯 DIFFICULTY: EASY</span>
+                </div>
+            </a>
+
+            <!-- LEVEL 2: SPEED MODE -->
+            <a href="snakegamelevel2.html" class="level-card" data-level="2">
+                <div class="level-header">
+                    <span class="level-number">LEVEL 2</span>
+                    <span class="level-badge">HOT 🔥</span>
+                </div>
+                <div class="level-title">⚡ SPEED MODE</div>
+                <div class="level-desc">
+                    Each apple makes you faster! Start slow, end INSANE. How long can you survive?
+                </div>
+                <div class="level-stats">
+                    <span>⚡ SPEED: PROGRESSIVE</span>
+                    <span>🎯 DIFFICULTY: HARD</span>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <div class="speed-indicator">
+                        <span style="color: #8aaab3; margin-right: 0.5rem;">SPEED SCALE:</span>
+                        <span style="color: #b0e57c;">●</span>
+                        <span style="color: #ffb347;">●</span>
+                        <span style="color: #ff6b6b;">●</span>
+                        <span style="margin-left: 0.5rem; color: #bed7da;">200ms → 60ms</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- LEVEL 3: PORTAL + OBSTACLE MODE -->
+            <a href="snakegamelevel3.html" class="level-card" data-level="3">
+                <div class="level-header">
+                    <span class="level-number">LEVEL 3</span>
+                    <span class="level-badge">EXTREME 🔥</span>
+                </div>
+                <div class="level-title">🌀 PORTAL MODE</div>
+                <div class="level-desc">
+                    Deadly walls block your path! Warp through edges, but avoid the red obstacles or die instantly.
+                </div>
+                <div class="level-stats">
+                    <span>🧱 OBSTACLES: 5 WALLS</span>
+                    <span>🎯 DIFFICULTY: EXTREME</span>
+                </div>
+                <div style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <span style="background: #9b59b6; padding: 0.2rem 0.8rem; border-radius: 1rem; color: white; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;">
+                        <span style="font-size: 1rem;">🌀</span> PORTAL EDGES
+                    </span>
+                    <span style="background: #ff6b6b; padding: 0.2rem 0.8rem; border-radius: 1rem; color: white; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem;">
+                        <span style="font-size: 1rem;">🧱</span> 17 WALLS
+                    </span>
+                </div>
+                <div style="margin-top: 0.8rem; color: #ff6b6b; font-size: 0.9rem; font-weight: bold; border: 1px solid #ff6b6b; border-radius: 2rem; padding: 0.3rem; text-align: center;">
+                    ⚠️ ONE HIT = GAME OVER!
+                </div>
+            </a>
+        </div>
+
+        <!-- ===== GLOBAL LEADERBOARD ===== -->
+        <div class="leaderboard-card">
+            <h2>🏆 TOP 5 PLAYERS · GLOBAL</h2>
+            <div id="leaderboard-container" style="min-height: 250px;">
+                <div class="loading-leaderboard">📡 Loading champions...</div>
+            </div>
+            <p style="color: #8aaab3; font-size: 0.8rem; margin-top: 1rem; text-align: right;">
+                🔄 Updates every 3s · Same leaderboard for all levels!
+            </p>
+        </div>
+
+        <div class="footer-note">
+            🍎 Connect your name to immortality · Choose your challenge!
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 🏆 TOP 5 LEADERBOARD - GLOBAL FOR ALL LEVELS
+        // ============================================
+        
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwmmbokNi1duI22Ds4f3LX2iwpqX-Ig4pDZKFl0F9z-3bVdehk83DWlHekUHJDqy4_4sA/exec";
+
+        async function loadTop5() {
+            const container = document.getElementById('leaderboard-container');
+            
+            try {
+                const response = await fetch(WEB_APP_URL + '?cb=' + Date.now());
+                const top5 = await response.json();
+                
+                if (top5.error) {
+                    throw new Error(top5.error);
+                }
+
+                if (top5.length === 0) {
+                    container.innerHTML = '<div style="color: #ffb347; text-align: center; padding: 2rem;">✨ No scores yet. Be the first!</div>';
+                    return;
+                }
+
+                let html = `
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>PLAYER</th>
+                                <th>🍎 SCORE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                top5.forEach((player, index) => {
+                    let medal = '';
+                    let style = '';
+                    
+                    if (index === 0) { medal = '🥇'; style = 'color: #ffd700; font-size: 1.3rem;'; }
+                    else if (index === 1) { medal = '🥈'; style = 'color: #c0c0c0; font-size: 1.2rem;'; }
+                    else if (index === 2) { medal = '🥉'; style = 'color: #cd7f32; font-size: 1.1rem;'; }
+                    else { medal = `${index + 1}`; }
+                    
+                    html += `
+                        <tr>
+                            <td style="font-weight: bold; ${style}">${medal}</td>
+                            <td>${player.name.substring(0, 12)}</td>
+                            <td style="font-weight: bold; color: #b0e57c;">${player.score}</td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // ============================================
+        // 🚀 UPDATE LEADERBOARD EVERY 3 SECONDS
+        // ============================================
+        
+        loadTop5();
+        setInterval(loadTop5, 3000);
+    </script>
+</body>
+</html>
